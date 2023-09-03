@@ -1,4 +1,5 @@
 use super::cpu_times::CpuTimes;
+use super::parse_error::ParseError;
 use std::fs;
 
 pub struct Utilization {
@@ -7,19 +8,19 @@ pub struct Utilization {
 }
 
 impl Utilization {
-    pub fn new() -> std::io::Result<Self> {
+    pub fn new() -> Result<Self, ParseError> {
         Ok(Utilization {
             cputimes: Self::read_cpu_times()?,
             prev_cputimes: Self::read_cpu_times()?,
         })
     }
 
-    pub fn update(&mut self) -> std::io::Result<()> {
+    pub fn update(&mut self) -> Result<(), ParseError> {
         self.prev_cputimes = std::mem::replace(&mut self.cputimes, Self::read_cpu_times()?);
         Ok(())
     }
 
-    pub fn get_average_load(&self) -> std::io::Result<f32> {
+    pub fn get_average_load(&self) -> Result<f32, ParseError> {
         let cpu_count = self.cputimes.len();
         let mut total = 0.0;
         for i in 0..cpu_count {
@@ -28,7 +29,7 @@ impl Utilization {
         Ok(total / cpu_count as f32)
     }
 
-    fn get_core_load(&self, core: usize) -> std::io::Result<f32> {
+    fn get_core_load(&self, core: usize) -> Result<f32, ParseError> {
         let last = &self.cputimes.get(core).ok_or(IndexError)?;
         let prev = &self.prev_cputimes.get(core).ok_or(IndexError)?;
 
@@ -43,8 +44,10 @@ impl Utilization {
         Ok(percentage.clamp(0.0, 100.0))
     }
 
-    fn read_cpu_times() -> std::io::Result<CpuTimes> {
-        fs::read_to_string("/proc/stat")?.parse()
+    fn read_cpu_times() -> Result<CpuTimes, ParseError> {
+        fs::read_to_string("/proc/stat")
+            .map_err(|e| ParseError::Generic(e.to_string()))?
+            .parse()
     }
 
     pub fn iter(&self) -> UtilizationIterator {
@@ -82,8 +85,8 @@ impl<'a> Iterator for UtilizationIterator<'a> {
 
 pub struct IndexError;
 
-impl From<IndexError> for std::io::Error {
+impl From<IndexError> for ParseError {
     fn from(_: IndexError) -> Self {
-        std::io::Error::new(std::io::ErrorKind::InvalidInput, "Out of bounds error")
+        ParseError::Generic("Out of bounds error".to_string())
     }
 }

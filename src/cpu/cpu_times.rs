@@ -1,8 +1,10 @@
 use super::cpu_time::CpuTime;
-use std::io;
+use super::parse_error::ParseError;
+use std::fmt::{Debug, Formatter, Result as FmtResult};
 use std::ops::Deref;
 use std::str::FromStr;
 
+#[derive(PartialEq)]
 pub struct CpuTimes(pub Vec<CpuTime>);
 
 impl Deref for CpuTimes {
@@ -14,19 +16,33 @@ impl Deref for CpuTimes {
 }
 
 impl FromStr for CpuTimes {
-    type Err = io::Error;
+    type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(CpuTimes(
-            s.lines()
-                .filter(|s| {
-                    if s.starts_with("cpu ") {
-                        return false;
-                    }
-                    s.starts_with("cpu")
-                })
-                .map(|s| s.parse())
-                .collect::<io::Result<Vec<CpuTime>>>()?,
-        ))
+        let cpu_times = s
+            .lines()
+            .filter(|s| !s.starts_with("cpu ") && s.starts_with("cpu"))
+            .map(|s| s.parse())
+            .collect::<Result<Vec<CpuTime>, ParseError>>()?;
+        match cpu_times.is_empty() {
+            false => Ok(CpuTimes(cpu_times)),
+            true => Err(ParseError::NoCpus),
+        }
+    }
+}
+
+impl Debug for CpuTimes {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
+        match self.is_empty() {
+            false => {
+                for (idx, cpu_time) in self.iter().enumerate() {
+                    writeln!(f, "cpu{idx}[{:?}]", cpu_time)?;
+                }
+                Ok(())
+            }
+            true => {
+                write!(f, "No CPUs")
+            }
+        }
     }
 }

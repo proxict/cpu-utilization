@@ -1,6 +1,7 @@
-use std::io;
+use super::parse_error::ParseError;
 use std::str::FromStr;
 
+#[derive(PartialEq, Debug)]
 pub struct CpuTime {
     pub user: u64,
     pub nice: u64,
@@ -33,77 +34,34 @@ fn get_next_token(string: &str) -> Option<(&str, &str)> {
 }
 
 impl FromStr for CpuTime {
-    type Err = io::Error;
+    type Err = ParseError;
 
     fn from_str(cpu_stat: &str) -> Result<Self, Self::Err> {
-        let (_cpu_name, cpu_stat) = get_next_token(cpu_stat).ok_or(CpuTimeParseError::CpuName)?;
-        let (user, cpu_stat) = get_next_token(cpu_stat).ok_or(CpuTimeParseError::User)?;
-        let (nice, cpu_stat) = get_next_token(cpu_stat).ok_or(CpuTimeParseError::Nice)?;
-        let (system, cpu_stat) = get_next_token(cpu_stat).ok_or(CpuTimeParseError::System)?;
-        let (idle, cpu_stat) = get_next_token(cpu_stat).ok_or(CpuTimeParseError::Idle)?;
-        let (iowait, cpu_stat) = get_next_token(cpu_stat).ok_or(CpuTimeParseError::IoWait)?;
-        let (irq, cpu_stat) = get_next_token(cpu_stat).ok_or(CpuTimeParseError::Irq)?;
-        let (softirq, cpu_stat) = get_next_token(cpu_stat).ok_or(CpuTimeParseError::SoftIrq)?;
-        let (steal, cpu_stat) = get_next_token(cpu_stat).ok_or(CpuTimeParseError::Steal)?;
-        let (guest, cpu_stat) = get_next_token(cpu_stat).ok_or(CpuTimeParseError::Guest)?;
-        let (guest_nice, _) = get_next_token(cpu_stat).ok_or(CpuTimeParseError::GuestNice)?;
-
-        let parse_token = |token: &str| {
-            token
-                .parse::<u64>()
-                .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
-        };
+        let (_cpu_name, cpu_stat) = get_next_token(cpu_stat).ok_or(ParseError::CpuName)?;
+        let (user, cpu_stat) = get_next_token(cpu_stat).ok_or(ParseError::User)?;
+        let (nice, cpu_stat) = get_next_token(cpu_stat).ok_or(ParseError::Nice)?;
+        let (system, cpu_stat) = get_next_token(cpu_stat).ok_or(ParseError::System)?;
+        let (idle, cpu_stat) = get_next_token(cpu_stat).ok_or(ParseError::Idle)?;
+        let (iowait, cpu_stat) = get_next_token(cpu_stat).ok_or(ParseError::IoWait)?;
+        let (irq, cpu_stat) = get_next_token(cpu_stat).ok_or(ParseError::Irq)?;
+        let (softirq, cpu_stat) = get_next_token(cpu_stat).ok_or(ParseError::SoftIrq)?;
+        let (steal, cpu_stat) = get_next_token(cpu_stat).ok_or(ParseError::Steal)?;
+        let (guest, cpu_stat) = get_next_token(cpu_stat).ok_or(ParseError::Guest)?;
+        let (guest_nice, _) = get_next_token(cpu_stat).ok_or(ParseError::GuestNice)?;
 
         Ok(CpuTime {
-            user: parse_token(user)?,
-            nice: parse_token(nice)?,
-            system: parse_token(system)?,
-            idle: parse_token(idle)?,
-            iowait: parse_token(iowait)?,
-            irq: parse_token(irq)?,
-            softirq: parse_token(softirq)?,
-            steal: parse_token(steal)?,
-            guest: parse_token(guest)?,
-            guest_nice: parse_token(guest_nice)?,
+            user: user.parse::<u64>().map_err(|_| ParseError::User)?,
+            nice: nice.parse::<u64>().map_err(|_| ParseError::Nice)?,
+            system: system.parse::<u64>().map_err(|_| ParseError::System)?,
+            idle: idle.parse::<u64>().map_err(|_| ParseError::Idle)?,
+            iowait: iowait.parse::<u64>().map_err(|_| ParseError::IoWait)?,
+            irq: irq.parse::<u64>().map_err(|_| ParseError::Irq)?,
+            softirq: softirq.parse::<u64>().map_err(|_| ParseError::SoftIrq)?,
+            steal: steal.parse::<u64>().map_err(|_| ParseError::Steal)?,
+            guest: guest.parse::<u64>().map_err(|_| ParseError::Guest)?,
+            guest_nice: guest_nice
+                .parse::<u64>()
+                .map_err(|_| ParseError::GuestNice)?,
         })
-    }
-}
-
-enum CpuTimeParseError {
-    CpuName,
-    User,
-    Nice,
-    System,
-    Idle,
-    IoWait,
-    Irq,
-    SoftIrq,
-    Steal,
-    Guest,
-    GuestNice,
-}
-
-impl From<CpuTimeParseError> for &'static str {
-    fn from(parse_error: CpuTimeParseError) -> Self {
-        match parse_error {
-            CpuTimeParseError::CpuName => "cpu name",
-            CpuTimeParseError::User => "user",
-            CpuTimeParseError::Nice => "nice",
-            CpuTimeParseError::System => "system",
-            CpuTimeParseError::Idle => "idle",
-            CpuTimeParseError::IoWait => "IO wait",
-            CpuTimeParseError::Irq => "IRQ",
-            CpuTimeParseError::SoftIrq => "soft IRQ",
-            CpuTimeParseError::Steal => "steal",
-            CpuTimeParseError::Guest => "guest",
-            CpuTimeParseError::GuestNice => "guest nice",
-        }
-    }
-}
-
-impl From<CpuTimeParseError> for io::Error {
-    fn from(parse_error: CpuTimeParseError) -> Self {
-        let msg: &str = parse_error.into();
-        io::Error::new(io::ErrorKind::InvalidInput, msg)
     }
 }

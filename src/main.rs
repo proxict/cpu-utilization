@@ -25,7 +25,7 @@ struct Args {
     per_core: bool,
 }
 
-fn main() -> std::io::Result<()> {
+fn main() -> Result<(), cpu::ParseError> {
     let args = Args::parse();
     let interval = args.interval.unwrap_or(Duration::from_secs(1));
 
