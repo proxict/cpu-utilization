@@ -1,6 +1,8 @@
 use clap::Parser;
 use cpu::utilization::Utilization;
 use duration_string::DurationString;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
 use std::time::Duration;
 
 mod cpu;
@@ -30,7 +32,14 @@ fn main() -> Result<(), cpu::ParseError> {
     let interval = args.interval.unwrap_or(Duration::from_secs(1));
 
     let mut u = Utilization::new()?;
-    loop {
+
+    let quit = Arc::new(AtomicBool::new(false));
+    signal_hook::flag::register(signal_hook::consts::SIGTERM, Arc::clone(&quit))
+        .expect("Failed to register SIGTERM handler");
+    signal_hook::flag::register(signal_hook::consts::SIGINT, Arc::clone(&quit))
+        .expect("Failed to register SIGINT handler");
+
+    while !quit.load(Ordering::Relaxed) {
         u.update()?;
         match args.per_core {
             true => {
@@ -45,4 +54,6 @@ fn main() -> Result<(), cpu::ParseError> {
         }
         std::thread::sleep(interval);
     }
+    println!();
+    Ok(())
 }
