@@ -65,3 +65,44 @@ impl FromStr for CpuTime {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn get_next_token() {
+        assert_eq!(super::get_next_token(""), None);
+
+        let test_str = "abc def ghi";
+        let tok = super::get_next_token(test_str);
+        assert_eq!(tok, Some(("abc", "def ghi")));
+
+        let tok = super::get_next_token(tok.unwrap().1);
+        assert_eq!(tok, Some(("def", "ghi")));
+
+        let tok = super::get_next_token(tok.unwrap().1);
+        assert_eq!(tok, Some(("ghi", "")));
+
+        let tok = super::get_next_token(tok.unwrap().1);
+        assert_eq!(tok, None);
+    }
+
+    #[test]
+    fn cpu_time_from_str() {
+        let cpu_stat = "cpu0 1 2 3 4 5 6 7 8 9 10";
+        assert_eq!(
+            cpu_stat.parse(),
+            Ok(super::CpuTime {
+                user: 1,
+                nice: 2,
+                system: 3,
+                idle: 4,
+                iowait: 5,
+                irq: 6,
+                softirq: 7,
+                steal: 8,
+                guest: 9,
+                guest_nice: 10,
+            })
+        );
+    }
+}
