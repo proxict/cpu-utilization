@@ -1,0 +1,63 @@
+.TH "UCPU" "1" "" "ucpu 1.0.0" "ucpu"
+
+.SH NAME
+.B ucpu \- A small utility for reporting CPU utilization
+
+.SH SYNOPSIS
+\fBucpu\fR [\fIOPTIONS\fR]
+
+.SH DESCRIPTION
+The \fBucpu\fR utility reports the CPU utilization over
+a specified time \fBinterval\fR. After each time period
+elapses, the utilization is written out to the standard
+output on a new line. The program runs indefinitely or
+until receiving a terminating signal. It's primarily
+intended to be used in system status bars.
+
+.SH OPTIONS
+
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Print usage information and exit.
+
+.TP
+\fB\-c\fR, \fB\-\-per-core\fR
+Report utilization of each CPU core separately, delimited by a semicolon.
+
+.TP
+\fB\-i\fR, \fB\-\-interval INTERVAL\fR
+.br
+Interval of CPU utilization reporting in \fBINTERVAL FORMAT\fR
+.br
+Defaults to \fB1s\fR
+
+
+.SH INTERVAL FORMAT
+\fB[0\-9]+(ns|us|ms|[smhdwy])\fR which translates to a given number of
+nanoseconds, microseconds, milliseconds, seconds, minutes, hours, days,
+weeks, and years respectively.
+
+.SH "SEE ALSO"
+\&\fBproc\fR\|(5)
+.SH COPYRIGHT
+Copyright (c) 2023 proxict (Marek Bogusovsky)
+.PP
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+.PP
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+.PP
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

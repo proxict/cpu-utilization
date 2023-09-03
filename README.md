@@ -1,10 +1,10 @@
-# cpu-utilization
+# ucpu
 
 A small utility for reporting CPU utilization.
 
 ### Synopsis:
 ```help
-Usage: cpu-utilization [OPTIONS]
+Usage: ucpu [OPTIONS]
 
 Options:
   -i, --interval <INTERVAL>  Interval of CPU utilization reporting (format
@@ -17,8 +17,12 @@ Options:
 ```bash
 cargo build --release
 ```
+or simply
+```bash
+make
+```
 
 ### Installation
 ```bash
-cp target/release/cpu-utilization /usr/local/bin/
+sudo make install
 ```
